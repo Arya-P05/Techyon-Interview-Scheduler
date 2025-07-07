@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TimeSlot } from '../pages/Index';
+import { TimeSlot } from '../hooks/useTimeSlots';
 import { Clock, Users } from 'lucide-react';
 
 interface TimeSlotGridProps {
@@ -10,6 +10,7 @@ interface TimeSlotGridProps {
 
 const TimeSlotGrid = ({ timeSlots, onSlotSelect }: TimeSlotGridProps) => {
   const formatTime = (time: string) => {
+    // Convert from 24-hour format (HH:MM:SS) to 12-hour format
     const [hour, minute] = time.split(':').map(Number);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
@@ -17,14 +18,14 @@ const TimeSlotGrid = ({ timeSlots, onSlotSelect }: TimeSlotGridProps) => {
   };
 
   const getAvailabilityColor = (slot: TimeSlot) => {
-    const spotsLeft = slot.maxCapacity - slot.bookedCount;
+    const spotsLeft = slot.max_capacity - slot.bookedCount;
     if (spotsLeft === 0) return 'bg-gray-100 border-gray-300 cursor-not-allowed';
     if (spotsLeft === 1) return 'bg-yellow-50 border-yellow-300 hover:bg-yellow-100 cursor-pointer';
     return 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer';
   };
 
   const getAvailabilityText = (slot: TimeSlot) => {
-    const spotsLeft = slot.maxCapacity - slot.bookedCount;
+    const spotsLeft = slot.max_capacity - slot.bookedCount;
     if (spotsLeft === 0) return 'Full';
     if (spotsLeft === 1) return '1 spot left';
     return `${spotsLeft} spots available`;
@@ -43,7 +44,7 @@ const TimeSlotGrid = ({ timeSlots, onSlotSelect }: TimeSlotGridProps) => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {timeSlots.map((slot) => {
-          const spotsLeft = slot.maxCapacity - slot.bookedCount;
+          const spotsLeft = slot.max_capacity - slot.bookedCount;
           const isFull = spotsLeft === 0;
           
           return (
@@ -56,7 +57,7 @@ const TimeSlotGrid = ({ timeSlots, onSlotSelect }: TimeSlotGridProps) => {
                 <div className="flex items-center space-x-2">
                   <Clock className="w-4 h-4 text-gray-600" />
                   <span className="font-semibold text-gray-900">
-                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                    {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
                   </span>
                 </div>
               </div>
@@ -65,7 +66,7 @@ const TimeSlotGrid = ({ timeSlots, onSlotSelect }: TimeSlotGridProps) => {
                 <div className="flex items-center space-x-2">
                   <Users className="w-4 h-4 text-gray-600" />
                   <span className="text-sm text-gray-600">
-                    {slot.bookedCount}/{slot.maxCapacity} booked
+                    {slot.bookedCount}/{slot.max_capacity} booked
                   </span>
                 </div>
                 

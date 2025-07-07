@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TimeSlot } from '../pages/Index';
+import { TimeSlot } from '../hooks/useTimeSlots';
 import { ArrowLeft, Upload, User, Mail, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ const BookingForm = ({ slot, onSubmit, onBack }: BookingFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formatTime = (time: string) => {
+    // Convert from 24-hour format (HH:MM:SS) to 12-hour format
     const [hour, minute] = time.split(':').map(Number);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
@@ -33,10 +34,13 @@ const BookingForm = ({ slot, onSubmit, onBack }: BookingFormProps) => {
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    onSubmit(formData);
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +50,7 @@ const BookingForm = ({ slot, onSubmit, onBack }: BookingFormProps) => {
     }
   };
 
-  const spotsLeft = slot.maxCapacity - slot.bookedCount;
+  const spotsLeft = slot.max_capacity - slot.bookedCount;
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-12">
@@ -65,7 +69,7 @@ const BookingForm = ({ slot, onSubmit, onBack }: BookingFormProps) => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 className="font-semibold text-blue-900 mb-2">Selected Time Slot</h3>
           <p className="text-blue-800">
-            Monday, July 14th • {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+            Monday, July 14th • {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
           </p>
           <p className="text-blue-600 text-sm mt-1">
             {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} remaining

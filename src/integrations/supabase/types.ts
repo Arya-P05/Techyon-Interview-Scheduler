@@ -14,7 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          resume_file_name: string | null
+          resume_file_url: string | null
+          time_slot_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          resume_file_name?: string | null
+          resume_file_url?: string | null
+          time_slot_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          resume_file_name?: string | null
+          resume_file_url?: string | null
+          time_slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_slots: {
+        Row: {
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          max_capacity: number
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          end_time: string
+          id?: string
+          max_capacity?: number
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          max_capacity?: number
+          start_time?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

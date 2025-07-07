@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TimeSlot, Attendee } from '../pages/Index';
+import { TimeSlot, Attendee } from '../hooks/useTimeSlots';
 import { CheckCircle, Calendar, Clock, Mail, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,7 @@ const ConfirmationPage = ({ booking, onNewBooking }: ConfirmationPageProps) => {
   const { slot, attendee } = booking;
 
   const formatTime = (time: string) => {
+    // Convert from 24-hour format (HH:MM:SS) to 12-hour format
     const [hour, minute] = time.split(':').map(Number);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
@@ -49,7 +50,7 @@ const ConfirmationPage = ({ booking, onNewBooking }: ConfirmationPageProps) => {
             <div className="flex items-center space-x-3">
               <Clock className="w-5 h-5 text-blue-600" />
               <span className="text-blue-800">
-                {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
               </span>
             </div>
             
