@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export interface TimeSlot {
   id: string;
@@ -17,86 +16,113 @@ export interface Attendee {
   id: string;
   name: string;
   email: string;
-  resumeFile?: File;
 }
 
 export const useTimeSlots = () => {
-  const { data: timeSlots = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['timeSlots'],
+  const {
+    data: timeSlots = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["timeSlots"],
     queryFn: async () => {
-      console.log('Fetching time slots from Supabase...');
-      
+      console.log("Fetching time slots from Supabase...");
+
       // Fetch time slots with booking counts
       const { data: slots, error: slotsError } = await supabase
-        .from('time_slots')
-        .select(`
+        .from("time_slots")
+        .select(
+          `
           *,
           bookings (
             id,
             name,
-            email,
-            resume_file_name,
-            resume_file_url
+            email
           )
-        `)
-        .order('start_time');
+        `
+        )
+        .order("start_time");
 
       if (slotsError) {
-        console.error('Error fetching time slots:', slotsError);
+        console.error("Error fetching time slots:", slotsError);
         throw slotsError;
       }
 
-      console.log('Raw slots data:', slots);
+      console.log("Raw slots data:", slots);
 
       // Transform the data to match our interface
-      const transformedSlots: TimeSlot[] = slots.map(slot => ({
+      const transformedSlots: TimeSlot[] = slots.map((slot) => ({
         id: slot.id,
         start_time: slot.start_time,
         end_time: slot.end_time,
         date: slot.date,
         max_capacity: slot.max_capacity,
         bookedCount: slot.bookings?.length || 0,
-        attendees: slot.bookings?.map((booking: any) => ({
-          id: booking.id,
-          name: booking.name,
-          email: booking.email,
-          resumeFileName: booking.resume_file_name,
-          resumeFileUrl: booking.resume_file_url
-        })) || []
+        attendees:
+          slot.bookings?.map((booking: any) => ({
+            id: booking.id,
+            name: booking.name,
+            email: booking.email,
+          })) || [],
       }));
 
-      console.log('Transformed slots:', transformedSlots);
+      console.log("Transformed slots:", transformedSlots);
       return transformedSlots;
-    }
+    },
   });
 
-  const createBooking = async (slotId: string, attendeeData: { name: string; email: string; resumeFile?: File }) => {
-    console.log('Creating booking for slot:', slotId, attendeeData);
-    
+  const createBooking = async (
+    slotId: string,
+    attendeeData: { name: string; email: string }
+  ) => {
+    console.log("Creating booking for slot:", slotId, attendeeData);
+
+    // Check if this email has already booked any slot
+    const { data: existingBookings, error: checkError } = await supabase
+      .from("bookings")
+      .select("id")
+      .eq("email", attendeeData.email);
+
+    if (checkError) {
+      console.error("Error checking for existing bookings:", checkError);
+      throw checkError;
+    }
+    if (existingBookings && existingBookings.length > 0) {
+      throw new Error("You have already booked a slot with this email.");
+    }
+
+    // Get the slot info for email
+    const { data: slotData, error: slotError } = await supabase
+      .from("time_slots")
+      .select("start_time, end_time")
+      .eq("id", slotId)
+      .single();
+    if (slotError) {
+      throw slotError;
+    }
+
     const { data, error } = await supabase
-      .from('bookings')
+      .from("bookings")
       .insert({
         time_slot_id: slotId,
         name: attendeeData.name,
         email: attendeeData.email,
-        resume_file_name: attendeeData.resumeFile?.name || null,
-        // Note: For file upload, we'd need to implement Supabase Storage
-        resume_file_url: null
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating booking:', error);
+      console.error("Error creating booking:", error);
       throw error;
     }
 
-    console.log('Booking created:', data);
-    
-    // Refetch time slots to update the UI
     await refetch();
-    
-    return data;
+    return {
+      ...data,
+      slot_start_time: slotData.start_time,
+      slot_end_time: slotData.end_time,
+    };
   };
 
   return {
@@ -104,6 +130,6 @@ export const useTimeSlots = () => {
     isLoading,
     error,
     createBooking,
-    refetch
+    refetch,
   };
 };
