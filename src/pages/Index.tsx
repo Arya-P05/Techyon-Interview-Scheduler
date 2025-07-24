@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useRound2Slots, Round2TimeSlot } from "../../hooks/useRound2Slots";
+import { useRound2Slots, Round2TimeSlot } from "../hooks/useRound2Slots";
 import { toast } from "@/hooks/use-toast";
 import {
   HiOutlineUser,
@@ -8,10 +8,10 @@ import {
   HiOutlineClock,
   HiOutlineCalendar,
 } from "react-icons/hi";
-import { VC_PROFILES } from "../../data/vcs";
-import { VCProfileCard } from "../../components/VCProfileCard";
+import { VC_PROFILES } from "../data/vcs";
+import { VCProfileCard } from "../components/VCProfileCard";
 import emailjs from "@emailjs/browser";
-import { MEET_LINKS } from "../../data/meetLinks";
+import { MEET_LINKS } from "../data/meetLinks";
 
 // Helper to get start of week (Monday)
 function getStartOfWeek(date: Date) {
