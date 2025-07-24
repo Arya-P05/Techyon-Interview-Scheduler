@@ -32,11 +32,7 @@ function formatDate(date: Date) {
 function getHourLabel(hour: number) {
   const date = new Date();
   date.setHours(hour, 0, 0, 0);
-  return date.toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  return formatTz(toZonedTime(date, EST_TZ), "h:mm a", { timeZone: EST_TZ });
 }
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -225,25 +221,19 @@ const Round2 = () => {
 
   // Helper for slot time string
   function slotTimeString(slot: Round2TimeSlot) {
-    const start = new Date(slot.start_time);
-    const end = new Date(slot.end_time);
-    return `${start.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })} - ${end.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+    const start = toZonedTime(new Date(slot.start_time), EST_TZ);
+    const end = toZonedTime(new Date(slot.end_time), EST_TZ);
+    return `${formatTz(start, "h:mm a", { timeZone: EST_TZ })} - ${formatTz(
+      end,
+      "h:mm a",
+      { timeZone: EST_TZ }
+    )}`;
   }
 
   // Helper for slot date string
   function slotDateString(slot: Round2TimeSlot) {
-    const start = new Date(slot.start_time);
-    return start.toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
+    const start = toZonedTime(new Date(slot.start_time), EST_TZ);
+    return formatTz(start, "EEEE, MMMM d", { timeZone: EST_TZ });
   }
 
   if (isLoading) return <div>Loading...</div>;
