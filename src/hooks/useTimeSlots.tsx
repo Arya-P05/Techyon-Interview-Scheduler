@@ -116,7 +116,6 @@ export const useTimeSlots = () => {
       console.error("Error creating booking:", error);
       throw error;
     }
-
     await refetch();
     return {
       ...data,

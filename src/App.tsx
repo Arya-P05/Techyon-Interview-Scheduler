@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import emailjs from "@emailjs/browser";
+import Round2 from "./pages/round2";
+
 emailjs.init("EuAJxr1WL8D7Rm-Zb");
 
 const queryClient = new QueryClient();
@@ -18,7 +20,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/round2" element={<Round2 />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
@@ -20,8 +20,6 @@ export type Database = {
           email: string
           id: string
           name: string
-          resume_file_name: string | null
-          resume_file_url: string | null
           time_slot_id: string
         }
         Insert: {
@@ -29,8 +27,6 @@ export type Database = {
           email: string
           id?: string
           name: string
-          resume_file_name?: string | null
-          resume_file_url?: string | null
           time_slot_id: string
         }
         Update: {
@@ -38,8 +34,6 @@ export type Database = {
           email?: string
           id?: string
           name?: string
-          resume_file_name?: string | null
-          resume_file_url?: string | null
           time_slot_id?: string
         }
         Relationships: [
@@ -51,6 +45,65 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      round2_bookings: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          slot_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          slot_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round2_bookings_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "round2_time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      round2_time_slots: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          start_time: string
+          vc_email: string
+          vc_name: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          start_time: string
+          vc_email: string
+          vc_name: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+          vc_email?: string
+          vc_name?: string
+        }
+        Relationships: []
       }
       time_slots: {
         Row: {
