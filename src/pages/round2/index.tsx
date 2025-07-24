@@ -12,6 +12,7 @@ import { VC_PROFILES } from "../../data/vcs";
 import { VCProfileCard } from "../../components/VCProfileCard";
 import emailjs from "@emailjs/browser";
 import { MEET_LINKS } from "../../data/meetLinks";
+import { toZonedTime, format as formatTz } from "date-fns-tz";
 
 // Helper to get start of week (Monday)
 function getStartOfWeek(date: Date) {
@@ -55,6 +56,8 @@ function getCompanyForVC(name: string) {
   const key = name.trim().toLowerCase();
   return vcCompanyMap[key] || "";
 }
+
+const EST_TZ = "America/New_York";
 
 function findMeetLink(vcName: string, dateKey: string, startTime24: string) {
   // Try the exact time first
@@ -149,30 +152,25 @@ const Round2 = () => {
         email: form.email,
       });
 
-      // Prepare email variables
-      const start = new Date(selectedSlot.start_time);
-      const end = new Date(selectedSlot.end_time);
-      const amOrPm = end.getHours() < 12 ? "AM" : "PM";
-      const dateStr = start.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-      const startTime = start.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const endTime = end.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      // Always use EST for all formatting and matching
+      const startUTC = new Date(selectedSlot.start_time);
+      const endUTC = new Date(selectedSlot.end_time);
+      const start = toZonedTime(startUTC, EST_TZ);
+      const end = toZonedTime(endUTC, EST_TZ);
+
+      // For link matching
+      const dateKey = formatTz(start, "yyyy-MM-dd", { timeZone: EST_TZ });
+      const startTime24 = formatTz(start, "HH:mm", { timeZone: EST_TZ });
+      const link = findMeetLink(selectedSlot.vc_name, dateKey, startTime24);
+
+      // For email display
+      const dateStr = formatTz(start, "EEEE, MMMM d", { timeZone: EST_TZ });
+      const startTime = formatTz(start, "h:mm a", { timeZone: EST_TZ });
+      const endTime = formatTz(end, "h:mm a", { timeZone: EST_TZ });
+      const amOrPm = formatTz(start, "a", { timeZone: EST_TZ });
       const vcName = selectedSlot.vc_name;
       const toName = form.name;
       const toEmail = form.email;
-      // For meet link lookup
-      const dateKey = start.toISOString().split("T")[0]; // YYYY-MM-DD
-      const startTime24 = start.toTimeString().slice(0, 5); // HH:mm
-      const link = findMeetLink(vcName, dateKey, startTime24);
 
       try {
         await emailjs.send("service_9q7qa88", "template_v1ht2ny", {

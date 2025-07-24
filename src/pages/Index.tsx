@@ -12,6 +12,7 @@ import { VC_PROFILES } from "../data/vcs";
 import { VCProfileCard } from "../components/VCProfileCard";
 import emailjs from "@emailjs/browser";
 import { MEET_LINKS } from "../data/meetLinks";
+import { toZonedTime, format } from "date-fns-tz";
 
 // Helper to get start of week (Monday)
 function getStartOfWeek(date: Date) {
@@ -143,47 +144,39 @@ const Round2 = () => {
       return;
     }
     try {
+      const EST_TZ = "America/New_York";
+      const startUTC = new Date(selectedSlot.start_time);
+      const endUTC = new Date(selectedSlot.end_time);
+
+      const start = toZonedTime(startUTC, EST_TZ);
+      const end = toZonedTime(endUTC, EST_TZ);
+
+      // For link matching
+      const dateKey = format(start, "yyyy-MM-dd", { timeZone: EST_TZ }); // e.g., 2025-07-28
+      const startTime24 = format(start, "HH:mm", { timeZone: EST_TZ }); // e.g., 14:00
+
+      // For email display
+      const dateStr = format(start, "EEEE, MMMM d", { timeZone: EST_TZ }); // e.g., Monday, July 28
+      const startTime = format(start, "h:mm a", { timeZone: EST_TZ }); // e.g., 2:00 PM
+      const endTime = format(end, "h:mm a", { timeZone: EST_TZ }); // e.g., 2:15 PM
+      const amOrPm = format(start, "a", { timeZone: EST_TZ }); // AM or PM
+
       await bookSlot.mutateAsync({
         slot_id: selectedSlot.id,
         name: form.name,
         email: form.email,
       });
 
-      // Prepare email variables
-      const start = new Date(selectedSlot.start_time);
-      const end = new Date(selectedSlot.end_time);
-      const amOrPm = end.getHours() < 12 ? "AM" : "PM";
-      const dateStr = start.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-      const startTime = start.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const endTime = end.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      const vcName = selectedSlot.vc_name;
-      const toName = form.name;
-      const toEmail = form.email;
-      // For meet link lookup
-      const dateKey = start.toISOString().split("T")[0]; // YYYY-MM-DD
-      const startTime24 = start.toTimeString().slice(0, 5); // HH:mm
-      const link = findMeetLink(vcName, dateKey, startTime24);
-
       try {
         await emailjs.send("service_9q7qa88", "template_v1ht2ny", {
-          to_name: toName,
-          VC_name: vcName,
+          to_name: form.name,
+          VC_name: form.name,
           date: dateStr,
           interview_start: startTime,
           interview_end: endTime,
           am_or_pm: amOrPm,
-          to_email: toEmail,
-          link: link,
+          to_email: form.email,
+          link: findMeetLink(selectedSlot.vc_name, dateKey, startTime24),
         });
       } catch (emailErr) {
         toast({
